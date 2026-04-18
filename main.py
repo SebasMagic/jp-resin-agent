@@ -94,7 +94,7 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
     stage = lead_score.lead_type.value
     stage_attr = f"GHL_STAGE_{stage.upper()}"
     stage_id = getattr(settings, stage_attr, "")
-    opps = ghl.search_opportunities(contact_id)
+    opps = ghl.search_opportunities(contact_id, pipeline_id=settings.GHL_PIPELINE_ID)
     if opps:
         if stage_id:
             ghl.update_opportunity_stage(opps[0]["id"], stage_id)

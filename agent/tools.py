@@ -35,7 +35,7 @@ def build_tools(contact_id: str, ghl: GHLClient, sheets: SheetsClient, store: Co
         stage_id = getattr(settings, stage_attr, "")
         if not stage_id:
             return f"Stage ID not configured for: {stage}"
-        opps = ghl.search_opportunities(contact_id)
+        opps = ghl.search_opportunities(contact_id, pipeline_id=settings.GHL_PIPELINE_ID)
         if opps:
             opp_id = opps[0]["id"]  # use most recent opportunity
             ghl.update_opportunity_stage(opp_id, stage_id)

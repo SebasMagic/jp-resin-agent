@@ -81,6 +81,9 @@ class GHLClient:
         data = self._get(f"/locations/{self._location_id}/customFields")
         return data["customFields"]
 
-    def search_opportunities(self, contact_id: str) -> list[dict]:
-        data = self._get("/opportunities/search", params={"contactId": contact_id, "locationId": self._location_id})
+    def search_opportunities(self, contact_id: str, pipeline_id: str = "") -> list[dict]:
+        params = {"contactId": contact_id, "locationId": self._location_id}
+        if pipeline_id:
+            params["pipelineId"] = pipeline_id
+        data = self._get("/opportunities/search", params=params)
         return data.get("opportunities", [])
