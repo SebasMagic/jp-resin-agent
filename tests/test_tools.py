@@ -75,3 +75,15 @@ def test_get_classes_returns_formatted_string():
     result = get_classes.invoke({})
     assert "Atlanta" in result
     assert "3 spots" in result
+
+
+def test_move_pipeline_creates_opportunity_when_none_exists():
+    ghl, sheets, store, settings = _make_deps()
+    ghl.search_opportunities.return_value = []
+    ghl.create_opportunity.return_value = {"id": "new_opp"}
+    store.get_context.return_value = {"first_name": "John", "last_name": "Doe"}
+    tools = build_tools(contact_id="c1", ghl=ghl, sheets=sheets, store=store, settings=settings)
+    move = next(t for t in tools if t.name == "move_pipeline")
+    move.invoke({"stage": "hot"})
+    ghl.create_opportunity.assert_called_once()
+    store.save_opportunity_id.assert_called_once_with("c1", "new_opp")

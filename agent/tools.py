@@ -37,8 +37,9 @@ def build_tools(contact_id: str, ghl: GHLClient, sheets: SheetsClient, store: Co
             return f"Stage ID not configured for: {stage}"
         opps = ghl.search_opportunities(contact_id)
         if opps:
-            opp_id = opps[0]["id"]
+            opp_id = opps[0]["id"]  # use most recent opportunity
             ghl.update_opportunity_stage(opp_id, stage_id)
+            store.save_opportunity_id(contact_id, opp_id)
         else:
             context = store.get_context(contact_id)
             name = f"{context.get('first_name', '')} {context.get('last_name', '')}".strip()
@@ -55,7 +56,7 @@ def build_tools(contact_id: str, ghl: GHLClient, sheets: SheetsClient, store: Co
 
     @tool
     def get_classes() -> str:
-        """Get all active upcoming classes with dates, city, state, spots left, and links."""
+        """Get all active upcoming classes with dates, city, state, price, spots left, and links."""
         classes = sheets.get_active_classes()
         if not classes:
             return "No active classes found."
@@ -67,7 +68,7 @@ def build_tools(contact_id: str, ghl: GHLClient, sheets: SheetsClient, store: Co
 
     @tool
     def notify_jp(reason: str) -> str:
-        """Create an urgent task in GHL assigned to JP to personally contact this lead."""
+        """Create an urgent GHL task to notify JP to contact this lead personally."""
         context = store.get_context(contact_id)
         name = f"{context.get('first_name', '')} {context.get('last_name', '')}".strip()
         title = f"🔥 HOT LEAD — Call {name} NOW. Reason: {reason}"
@@ -75,18 +76,18 @@ def build_tools(contact_id: str, ghl: GHLClient, sheets: SheetsClient, store: Co
         return "JP notified with urgent task."
 
     @tool
-    def send_payment_link(payment_link: str) -> str:
-        """Send the payment link to the lead so they can enroll directly."""
+    def send_payment_link(payment_link: str, channel: str = "SMS") -> str:
+        """Send the payment link to the lead. Pass the exact payment_link from get_classes. channel: SMS, Instagram, or Facebook."""
         message = f"Here's your link to lock in your spot: {payment_link} 🔒 Only a few spots left — grab yours now!"
-        ghl.send_message(contact_id=contact_id, message=message, channel="SMS")
+        ghl.send_message(contact_id=contact_id, message=message, channel=channel)
         store.save_message(contact_id, "ai", message)
         return "Payment link sent."
 
     @tool
-    def send_calendar_link(calendar_link: str) -> str:
-        """Send JP's calendar link so the lead can book a call with JP."""
+    def send_calendar_link(calendar_link: str, channel: str = "SMS") -> str:
+        """Send JP's calendar link to book a call. Pass the exact calendar_link from get_classes. channel: SMS, Instagram, or Facebook."""
         message = f"Awesome! Here's JP's calendar to book your call: {calendar_link} 📅 Pick a time that works for you!"
-        ghl.send_message(contact_id=contact_id, message=message, channel="SMS")
+        ghl.send_message(contact_id=contact_id, message=message, channel=channel)
         store.save_message(contact_id, "ai", message)
         return "Calendar link sent."
 
