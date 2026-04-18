@@ -85,5 +85,10 @@ class GHLClient:
         params = {"contactId": contact_id, "locationId": self._location_id}
         if pipeline_id:
             params["pipelineId"] = pipeline_id
-        data = self._get("/opportunities/search", params=params)
-        return data.get("opportunities", [])
+        try:
+            data = self._get("/opportunities/search", params=params)
+            return data.get("opportunities", [])
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code in (404, 422):
+                return []
+            raise
