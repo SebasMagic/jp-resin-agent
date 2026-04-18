@@ -11,7 +11,6 @@ You are talking to a lead who submitted a form. Here is what you know about them
 - Experience: {lead_context.get('experience', '')}
 - Goal: {lead_context.get('goal', '')}
 - Investment timeline: {lead_context.get('investment', '')}
-- Engagement score: {lead_context.get('score', 0)}/100
 - Lead type: {lead_type.value.upper()}
 
 Available upcoming classes:
@@ -61,10 +60,9 @@ def _format_classes(classes: list[ClassInfo]) -> str:
 def build_first_message_hot(first_name: str, class_info: ClassInfo | None) -> str:
     if class_info:
         return (
-            f"Hey {first_name}! Saw you're ready to go with epoxy flooring 🔥 "
-            f"We only have {class_info.spots_left} spots left for our bootcamp in "
-            f"{class_info.city}, {class_info.state} — {class_info.start_date}. "
-            f"Would you like to jump on a quick call with JP personally, or are you ready to lock in your spot right now?"
+            f"Hey {first_name}! 🔥 Only {class_info.spots_left} spots left for JP Resin's bootcamp "
+            f"in {class_info.city} — {class_info.start_date}. "
+            f"Ready to lock in, or want a quick call with JP first?"
         )
     return (
         f"Hey {first_name}! Saw you're ready to go with epoxy flooring 🔥 "
