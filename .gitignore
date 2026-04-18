@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+conversations.db
+*.db
+.pytest_cache/
+.ruff_cache/
+dist/
+*.egg-info/
