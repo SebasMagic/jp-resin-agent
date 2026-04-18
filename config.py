@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     GOOGLE_SERVICE_ACCOUNT_JSON: str
 
     WEBHOOK_SECRET: str = "changeme"
+    TEST_TAG: str = ""  # if set, only process contacts with this tag (e.g. "ai-test")
 
     DB_PATH: str = "conversations.db"
 

@@ -51,6 +51,12 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
     phone = contact.get("phone", "")
     state = contact.get("state", "")
 
+    # Tag filter — if TEST_TAG is configured, skip contacts without it
+    if settings.TEST_TAG:
+        tags = contact.get("tags", [])
+        if settings.TEST_TAG not in tags:
+            return {"status": "skipped", "reason": f"contact missing tag '{settings.TEST_TAG}'"}
+
     custom_fields = {f["id"]: f["value"] for f in contact.get("customFields", [])}
     experience = custom_fields.get(settings.GHL_FIELD_EXPERIENCE, "")
     goal = custom_fields.get(settings.GHL_FIELD_GOAL, "")
