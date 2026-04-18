@@ -22,19 +22,19 @@ class GHLClient:
         self._location_id = location_id
 
     def _get(self, path: str, params: dict = None) -> dict:
-        with httpx.Client() as client:
+        with httpx.Client(timeout=30.0) as client:
             resp = client.get(f"{GHL_BASE}{path}", headers=self._headers, params=params)
             resp.raise_for_status()
             return resp.json()
 
     def _post(self, path: str, body: dict) -> dict:
-        with httpx.Client() as client:
+        with httpx.Client(timeout=30.0) as client:
             resp = client.post(f"{GHL_BASE}{path}", headers=self._headers, json=body)
             resp.raise_for_status()
             return resp.json()
 
     def _put(self, path: str, body: dict) -> dict:
-        with httpx.Client() as client:
+        with httpx.Client(timeout=30.0) as client:
             resp = client.put(f"{GHL_BASE}{path}", headers=self._headers, json=body)
             resp.raise_for_status()
             return resp.json()
@@ -82,5 +82,5 @@ class GHLClient:
         return data["customFields"]
 
     def search_opportunities(self, contact_id: str) -> list[dict]:
-        data = self._get("/opportunities/search", params={"contact_id": contact_id, "location_id": self._location_id})
+        data = self._get("/opportunities/search", params={"contactId": contact_id, "locationId": self._location_id})
         return data.get("opportunities", [])
