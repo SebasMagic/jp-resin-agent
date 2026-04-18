@@ -26,6 +26,8 @@ class ConversationStore:
                     opportunity_id TEXT
                 )
             """)
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_messages_contact ON messages(contact_id)")
 
     def save_message(self, contact_id: str, role: str, content: str):
         with sqlite3.connect(self._db) as conn:
@@ -40,10 +42,15 @@ class ConversationStore:
                 "SELECT role, content FROM messages WHERE contact_id = ? ORDER BY id ASC",
                 (contact_id,),
             ).fetchall()
-        return [
-            HumanMessage(content=content) if role == "human" else AIMessage(content=content)
-            for role, content in rows
-        ]
+        result = []
+        for role, content in rows:
+            if role == "human":
+                result.append(HumanMessage(content=content))
+            elif role == "ai":
+                result.append(AIMessage(content=content))
+            else:
+                raise ValueError(f"Unknown message role in DB: {role!r}")
+        return result
 
     def save_context(self, contact_id: str, context: dict):
         with sqlite3.connect(self._db) as conn:
