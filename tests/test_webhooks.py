@@ -103,3 +103,20 @@ def test_new_lead_webhook_rejects_wrong_secret():
         headers={"x-webhook-secret": "wrongsecret"},
     )
     assert resp.status_code == 403
+
+
+def test_new_lead_rejects_missing_secret():
+    from main import app
+    client = TestClient(app)
+    resp = client.post("/webhook/new-lead", json=_new_lead_payload())
+    assert resp.status_code == 403
+
+
+def test_reply_rejects_missing_secret():
+    from main import app
+    client = TestClient(app)
+    resp = client.post(
+        "/webhook/reply",
+        json={"contactId": "contact123", "message": "Hi", "channel": "SMS"},
+    )
+    assert resp.status_code == 403

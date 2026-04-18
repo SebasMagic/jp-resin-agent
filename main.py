@@ -1,3 +1,4 @@
+import hmac
 from fastapi import FastAPI, HTTPException, Header, Request
 from pydantic import BaseModel
 from typing import Optional
@@ -25,8 +26,8 @@ def _get_deps():
     return ghl, sheets, store
 
 
-def _verify_secret(secret: Optional[str]):
-    if secret != settings.WEBHOOK_SECRET:
+def _verify_secret(secret: str | None):
+    if not secret or not hmac.compare_digest(secret, settings.WEBHOOK_SECRET):
         raise HTTPException(status_code=403, detail="Invalid webhook secret")
 
 
@@ -42,6 +43,8 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
 
     contact = body.get("contact", body)
     contact_id = contact.get("id", "")
+    if not contact_id:
+        raise HTTPException(status_code=422, detail="Missing contact id in payload")
     first_name = contact.get("firstName", "")
     last_name = contact.get("lastName", "")
     email = contact.get("email", "")
@@ -86,15 +89,13 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
     store.save_context(contact_id, lead_context)
 
     stage = lead_score.lead_type.value
+    stage_attr = f"GHL_STAGE_{stage.upper()}"
+    stage_id = getattr(settings, stage_attr, "")
     opps = ghl.search_opportunities(contact_id)
     if opps:
-        stage_attr = f"GHL_STAGE_{stage.upper()}"
-        stage_id = getattr(settings, stage_attr, "")
         if stage_id:
             ghl.update_opportunity_stage(opps[0]["id"], stage_id)
     else:
-        stage_attr = f"GHL_STAGE_{stage.upper()}"
-        stage_id = getattr(settings, stage_attr, "")
         if stage_id:
             opp = ghl.create_opportunity(contact_id, settings.GHL_PIPELINE_ID, stage_id, f"{first_name} {last_name}")
             store.save_opportunity_id(contact_id, opp["id"])
@@ -109,8 +110,11 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
     else:
         first_message = build_first_message_cold(first_name)
 
-    ghl.send_message(contact_id=contact_id, message=first_message, channel="SMS")
-    store.save_message(contact_id, "ai", first_message)
+    try:
+        ghl.send_message(contact_id=contact_id, message=first_message, channel="SMS")
+        store.save_message(contact_id, "ai", first_message)
+    except Exception:
+        pass  # lead is scored and in pipeline; don't fail webhook on messaging error
 
     return {"status": "processed", "score": lead_score.total, "lead_type": lead_score.lead_type.value}
 
@@ -134,15 +138,18 @@ async def reply(payload: ReplyPayload, x_webhook_secret: Optional[str] = Header(
     lead_type = LeadType(lead_context.get("lead_type", "cold"))
     classes = sheets.get_active_classes()
 
-    response = run_agent(
-        contact_id=payload.contactId,
-        human_message=payload.message,
-        lead_type=lead_type,
-        lead_context=lead_context,
-        classes=classes,
-        ghl=ghl,
-        sheets=sheets,
-        store=store,
-    )
+    try:
+        response = run_agent(
+            contact_id=payload.contactId,
+            human_message=payload.message,
+            lead_type=lead_type,
+            lead_context=lead_context,
+            classes=classes,
+            ghl=ghl,
+            sheets=sheets,
+            store=store,
+        )
+    except Exception as exc:
+        return {"status": "error", "response": f"Agent temporarily unavailable: {exc}"}
 
     return {"status": "ok", "response": response}
