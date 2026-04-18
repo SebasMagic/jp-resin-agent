@@ -69,7 +69,7 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
         experience=experience,
         goal=goal,
         investment=investment,
-        channel="SMS",
+        channel=contact.get("channel", "SMS"),
     )
 
     ghl, sheets, store = _get_deps()
@@ -88,6 +88,7 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
         "investment": investment,
         "score": lead_score.total,
         "lead_type": lead_score.lead_type.value,
+        "channel": form.channel,
     }
     store.save_context(contact_id, lead_context)
 
@@ -141,12 +142,15 @@ async def reply(payload: ReplyPayload, x_webhook_secret: Optional[str] = Header(
     lead_type = LeadType(lead_context.get("lead_type", "cold"))
     classes = sheets.get_active_classes()
 
+    # Use channel from payload; fall back to what was saved at lead creation
+    channel = payload.channel or lead_context.get("channel", "SMS")
+
     try:
         response = run_agent(
             contact_id=payload.contactId,
             human_message=payload.message,
             lead_type=lead_type,
-            lead_context=lead_context,
+            lead_context={**lead_context, "channel": channel},
             classes=classes,
             ghl=ghl,
             sheets=sheets,

@@ -6,9 +6,12 @@ GHL_BASE = "https://services.leadconnectorhq.com"
 GHL_VERSION = "2021-07-28"
 
 CHANNEL_TYPE_MAP = {
-    "SMS": "SMS",
-    "Instagram": "IG",
-    "Facebook": "FB",
+    "sms": "SMS",
+    "instagram": "IG",
+    "ig": "IG",
+    "facebook": "FB",
+    "fb": "FB",
+    "facebook_messenger": "FB",
 }
 
 
@@ -44,7 +47,7 @@ class GHLClient:
         return data["contact"]
 
     def send_message(self, contact_id: str, message: str, channel: str = "SMS") -> dict:
-        msg_type = CHANNEL_TYPE_MAP.get(channel, "SMS")
+        msg_type = CHANNEL_TYPE_MAP.get(channel.lower(), "SMS")
         body = {"type": msg_type, "contactId": contact_id, "message": message}
         return self._post("/conversations/messages", body)
 
