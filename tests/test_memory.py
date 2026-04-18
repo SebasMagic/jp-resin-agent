@@ -1,4 +1,5 @@
 # tests/test_memory.py
+import contextlib
 import os
 import pytest
 from agent.memory import ConversationStore
@@ -10,7 +11,8 @@ def store(tmp_path):
     db = str(tmp_path / "test.db")
     s = ConversationStore(db_path=db)
     yield s
-    if os.path.exists(db):
+    # tmp_path cleanup handles removal; suppress Windows file-lock errors
+    with contextlib.suppress(PermissionError, OSError):
         os.remove(db)
 
 
