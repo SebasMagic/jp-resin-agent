@@ -53,6 +53,8 @@ def create_agent(
         tools=tools,
         verbose=True,
         handle_parsing_errors=True,
+        max_iterations=5,
+        max_execution_time=30,
     )
     return executor, history
 
@@ -77,10 +79,14 @@ def run_agent(
         store=store,
     )
     store.save_message(contact_id, "human", human_message)
-    result = executor.invoke({
-        "input": human_message,
-        "chat_history": history,
-    })
-    output = result["output"]
+    try:
+        result = executor.invoke({
+            "input": human_message,
+            "chat_history": history,
+        })
+        output = result.get("output") or ""
+    except Exception as exc:
+        store.save_message(contact_id, "ai", f"[ERROR: agent failed — {exc}]")
+        raise
     store.save_message(contact_id, "ai", output)
     return output
