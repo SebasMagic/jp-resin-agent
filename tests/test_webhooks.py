@@ -14,6 +14,7 @@ def _new_lead_payload():
             "email": "john@test.com",
             "phone": "+14045551234",
             "state": "Georgia",
+            "tags": ["ai-test"],
             "customFields": [
                 {"id": "field_exp", "value": "Yes, I do flooring/construction work now"},
                 {"id": "field_goal", "value": "Start my own epoxy business and go full-time"},

@@ -28,8 +28,7 @@ class Settings(BaseSettings):
 
     DEEPSEEK_API_KEY: str
 
-    GOOGLE_SHEETS_ID: str
-    GOOGLE_SERVICE_ACCOUNT_JSON: str
+    GOOGLE_SHEETS_CSV_URL: str
 
     WEBHOOK_SECRET: str = "changeme"
     TEST_TAG: str = ""  # if set, only process contacts with this tag (e.g. "ai-test")

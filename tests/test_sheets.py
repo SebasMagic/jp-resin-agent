@@ -1,48 +1,35 @@
-# tests/test_sheets.py
-from unittest.mock import MagicMock, patch
+import csv
+import io
+from unittest.mock import patch, MagicMock
 from services.sheets import SheetsClient
-from models.lead import ClassInfo
 
 
-def _make_mock_worksheet(rows):
-    ws = MagicMock()
-    ws.get_all_records.return_value = rows
-    return ws
+_FIELDS = ["class_name", "start_date", "end_date", "city", "state", "price", "spots_left", "payment_link", "calendar_link", "active"]
+
+
+def _make_csv(*rows):
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=_FIELDS)
+    writer.writeheader()
+    for r in rows:
+        writer.writerow(dict(zip(_FIELDS, r)))
+    return buf.getvalue()
+
+
+def _mock_response(text):
+    mock = MagicMock()
+    mock.text = text
+    mock.raise_for_status = MagicMock()
+    return mock
 
 
 def test_get_active_classes_returns_active_only():
-    rows = [
-        {
-            "class_name": "4-Day Epoxy Bootcamp",
-            "start_date": "2026-04-27",
-            "end_date": "2026-04-30",
-            "city": "Atlanta",
-            "state": "Georgia",
-            "price": "$2,500",
-            "spots_left": 5,
-            "payment_link": "https://pay.example.com",
-            "calendar_link": "https://cal.example.com",
-            "active": "TRUE",
-        },
-        {
-            "class_name": "Old Class",
-            "start_date": "2025-01-01",
-            "end_date": "2025-01-04",
-            "city": "Miami",
-            "state": "Florida",
-            "price": "$2,500",
-            "spots_left": 0,
-            "payment_link": "",
-            "calendar_link": "",
-            "active": "FALSE",
-        },
-    ]
-    with patch("services.sheets.gspread") as mock_gspread:
-        mock_client = MagicMock()
-        mock_gspread.service_account_from_dict.return_value = mock_client
-        mock_client.open_by_key.return_value.sheet1 = _make_mock_worksheet(rows)
-
-        client = SheetsClient(service_account_json="{}", sheet_id="sheet123")
+    csv_text = _make_csv(
+        ["4-Day Epoxy Bootcamp", "2026-04-27", "2026-04-30", "Atlanta", "Georgia", "$2,500", 5, "https://pay.example.com", "https://cal.example.com", "TRUE"],
+        ["Old Class", "2025-01-01", "2025-01-04", "Miami", "Florida", "$2,500", 0, "", "", "FALSE"],
+    )
+    with patch("services.sheets.requests.get", return_value=_mock_response(csv_text)):
+        client = SheetsClient(csv_url="https://example.com/sheet.csv")
         classes = client.get_active_classes()
 
     assert len(classes) == 1
@@ -52,38 +39,12 @@ def test_get_active_classes_returns_active_only():
 
 
 def test_get_classes_for_state_filters_by_state():
-    rows = [
-        {
-            "class_name": "Atlanta Bootcamp",
-            "start_date": "2026-04-27",
-            "end_date": "2026-04-30",
-            "city": "Atlanta",
-            "state": "Georgia",
-            "price": "$2,500",
-            "spots_left": 3,
-            "payment_link": "https://pay.example.com",
-            "calendar_link": "https://cal.example.com",
-            "active": "TRUE",
-        },
-        {
-            "class_name": "Miami Bootcamp",
-            "start_date": "2026-06-01",
-            "end_date": "2026-06-04",
-            "city": "Miami",
-            "state": "Florida",
-            "price": "$2,500",
-            "spots_left": 8,
-            "payment_link": "https://pay.example.com",
-            "calendar_link": "https://cal.example.com",
-            "active": "TRUE",
-        },
-    ]
-    with patch("services.sheets.gspread") as mock_gspread:
-        mock_client = MagicMock()
-        mock_gspread.service_account_from_dict.return_value = mock_client
-        mock_client.open_by_key.return_value.sheet1 = _make_mock_worksheet(rows)
-
-        client = SheetsClient(service_account_json="{}", sheet_id="sheet123")
+    csv_text = _make_csv(
+        ["Atlanta Bootcamp", "2026-04-27", "2026-04-30", "Atlanta", "Georgia", "$2,500", 3, "https://pay.example.com", "https://cal.example.com", "TRUE"],
+        ["Miami Bootcamp", "2026-06-01", "2026-06-04", "Miami", "Florida", "$2,500", 8, "https://pay.example.com", "https://cal.example.com", "TRUE"],
+    )
+    with patch("services.sheets.requests.get", return_value=_mock_response(csv_text)):
+        client = SheetsClient(csv_url="https://example.com/sheet.csv")
         classes = client.get_classes_for_state("Georgia")
 
     assert len(classes) == 1
