@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, ConfigDict, computed_field
 
 
 class LeadType(str, Enum):
@@ -34,6 +34,8 @@ class ClassInfo(BaseModel):
 
 
 class LeadScore(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     experience_pts: int
     goal_pts: int
     investment_pts: int
