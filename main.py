@@ -28,6 +28,7 @@ def _verify_secret(secret: str | None):
         raise HTTPException(status_code=403, detail="Invalid webhook secret")
 
 
+@app.get("/")
 @app.get("/health")
 def health():
     return {"status": "ok"}
