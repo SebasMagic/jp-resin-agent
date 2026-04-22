@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 from services.sheets import SheetsClient
 
 
-_FIELDS = ["class_name", "start_date", "end_date", "city", "state", "price", "spots_left", "payment_link", "calendar_link", "active"]
+_FIELDS = ["Class Starts", "Class Ends", "City", "State", "Job Type", "Stripe Link", "Spots Left Real", "Spots Left Scarcity"]
 
 
 def _make_csv(*rows):
@@ -23,10 +23,10 @@ def _mock_response(text):
     return mock
 
 
-def test_get_active_classes_returns_active_only():
+def test_get_active_classes_returns_rows_with_spots():
     csv_text = _make_csv(
-        ["4-Day Epoxy Bootcamp", "2026-04-27", "2026-04-30", "Atlanta", "Georgia", "$2,500", 5, "https://pay.example.com", "https://cal.example.com", "TRUE"],
-        ["Old Class", "2025-01-01", "2025-01-04", "Miami", "Florida", "$2,500", 0, "", "", "FALSE"],
+        ["27 April", "30 April", "Atlanta", "Georgia", "Job Site", "https://pay.example.com", 5, 2],
+        ["01 June", "04 June", "Miami", "Florida", "Job Site", "https://pay2.example.com", 0, 0],
     )
     with patch("services.sheets.requests.get", return_value=_mock_response(csv_text)):
         client = SheetsClient(csv_url="https://example.com/sheet.csv")
@@ -36,12 +36,13 @@ def test_get_active_classes_returns_active_only():
     assert classes[0].city == "Atlanta"
     assert classes[0].state == "Georgia"
     assert classes[0].spots_left == 5
+    assert classes[0].payment_link == "https://pay.example.com"
 
 
 def test_get_classes_for_state_filters_by_state():
     csv_text = _make_csv(
-        ["Atlanta Bootcamp", "2026-04-27", "2026-04-30", "Atlanta", "Georgia", "$2,500", 3, "https://pay.example.com", "https://cal.example.com", "TRUE"],
-        ["Miami Bootcamp", "2026-06-01", "2026-06-04", "Miami", "Florida", "$2,500", 8, "https://pay.example.com", "https://cal.example.com", "TRUE"],
+        ["27 April", "30 April", "Atlanta", "Georgia", "Job Site", "https://pay.example.com", 3, 1],
+        ["01 June", "04 June", "Miami", "Florida", "Job Site", "https://pay2.example.com", 8, 5],
     )
     with patch("services.sheets.requests.get", return_value=_mock_response(csv_text)):
         client = SheetsClient(csv_url="https://example.com/sheet.csv")

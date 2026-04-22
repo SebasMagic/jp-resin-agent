@@ -100,3 +100,13 @@ class GHLClient:
             if e.response.status_code in (404, 422):
                 return []
             raise
+
+    def get_opportunities_by_contact(self, contact_id: str) -> list[dict]:
+        """Search across all pipelines — used as fallback when pipelined search returns empty."""
+        try:
+            data = self._get("/opportunities/search", params={"contactId": contact_id, "locationId": self._location_id})
+            return data.get("opportunities", [])
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code in (404, 422):
+                return []
+            raise

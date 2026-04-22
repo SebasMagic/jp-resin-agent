@@ -14,19 +14,20 @@ class SheetsClient:
         reader = csv.DictReader(io.StringIO(response.text))
         classes = []
         for r in reader:
-            if str(r.get("active", "")).upper() != "TRUE":
+            spots_raw = str(r.get("Spots Left Real", "0")).strip()
+            spots = int(spots_raw) if spots_raw.isdigit() else 0
+            if spots <= 0:
                 continue
-            spots_raw = str(r.get("spots_left", "0")).strip()
             classes.append(ClassInfo(
-                name=r["class_name"],
-                start_date=r["start_date"],
-                end_date=r["end_date"],
-                city=r["city"],
-                state=r["state"],
-                price=str(r["price"]),
-                spots_left=int(spots_raw) if spots_raw.isdigit() else 0,
-                payment_link=r["payment_link"],
-                calendar_link=r["calendar_link"],
+                name=r.get("Job Type", ""),
+                start_date=r.get("Class Starts", ""),
+                end_date=r.get("Class Ends", ""),
+                city=r.get("City", ""),
+                state=r.get("State", ""),
+                price="",
+                spots_left=spots,
+                payment_link=r.get("Stripe Link", ""),
+                calendar_link="",
             ))
         return classes
 

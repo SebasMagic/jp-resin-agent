@@ -96,13 +96,25 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
     stage_attr = f"GHL_STAGE_{stage.upper()}"
     stage_id = getattr(settings, stage_attr, "")
     opps = ghl.search_opportunities(contact_id, pipeline_id=settings.GHL_PIPELINE_ID)
+    if not opps:
+        # Fallback: search without pipeline filter (GHL sometimes misses pipeline-scoped search)
+        opps = ghl.get_opportunities_by_contact(contact_id)
     if opps:
         if stage_id:
             ghl.update_opportunity_stage(opps[0]["id"], stage_id)
+        store.save_opportunity_id(contact_id, opps[0]["id"])
     else:
         if stage_id:
-            opp = ghl.create_opportunity(contact_id, settings.GHL_PIPELINE_ID, stage_id, f"{first_name} {last_name}")
-            store.save_opportunity_id(contact_id, opp["id"])
+            try:
+                opp = ghl.create_opportunity(contact_id, settings.GHL_PIPELINE_ID, stage_id, f"{first_name} {last_name}")
+                store.save_opportunity_id(contact_id, opp["id"])
+            except Exception:
+                # Duplicate or creation error — try to fetch the existing opportunity
+                opps = ghl.get_opportunities_by_contact(contact_id)
+                if opps:
+                    store.save_opportunity_id(contact_id, opps[0]["id"])
+                    if stage_id:
+                        ghl.update_opportunity_stage(opps[0]["id"], stage_id)
 
     state_classes = [c for c in classes if c.state.lower() == state.lower()]
     first_class = state_classes[0] if state_classes else (classes[0] if classes else None)
