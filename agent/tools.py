@@ -62,13 +62,6 @@ def build_tools(contact_id: str, ghl: GHLClient, sheets: SheetsClient, store: Co
         return f"Moved to stage: {stage}"
 
     @tool
-    def send_message(message: str, channel: str = "") -> str:
-        """Send a message to the lead. channel can be: SMS, Instagram, Facebook. Leave empty to use the lead's channel."""
-        ghl.send_message(contact_id=contact_id, message=message, channel=channel or lead_channel)
-        store.save_message(contact_id, "ai", message)
-        return f"Message sent via {channel or lead_channel}"
-
-    @tool
     def get_classes() -> str:
         """Get all active upcoming classes with dates, city, state, price, spots left, and links."""
         classes = sheets.get_active_classes()
@@ -117,4 +110,4 @@ def build_tools(contact_id: str, ghl: GHLClient, sheets: SheetsClient, store: Co
         ghl.trigger_workflow(contact_id=contact_id, workflow_id=workflow_id)
         return f"Workflow triggered: {workflow_name}"
 
-    return [move_pipeline, send_message, get_classes, notify_jp, send_payment_link, send_calendar_link, trigger_workflow]
+    return [move_pipeline, get_classes, notify_jp, send_payment_link, send_calendar_link, trigger_workflow]

@@ -30,12 +30,12 @@ def test_build_tools_returns_list():
     tools = build_tools(contact_id="c1", ghl=ghl, sheets=sheets, store=store, settings=settings)
     tool_names = [t.name for t in tools]
     assert "move_pipeline" in tool_names
-    assert "send_message" in tool_names
     assert "get_classes" in tool_names
     assert "notify_jp" in tool_names
     assert "send_payment_link" in tool_names
     assert "send_calendar_link" in tool_names
     assert "trigger_workflow" in tool_names
+    assert "send_message" not in tool_names
 
 
 def test_move_pipeline_calls_ghl():
@@ -46,13 +46,6 @@ def test_move_pipeline_calls_ghl():
     move.invoke({"stage": "hot"})
     ghl.update_opportunity_stage.assert_called_once_with("opp1", "stage_hot")
 
-
-def test_send_message_calls_ghl():
-    ghl, sheets, store, settings = _make_deps()
-    tools = build_tools(contact_id="c1", ghl=ghl, sheets=sheets, store=store, settings=settings)
-    send = next(t for t in tools if t.name == "send_message")
-    send.invoke({"message": "Hello!", "channel": "SMS"})
-    ghl.send_message.assert_called_once_with(contact_id="c1", message="Hello!", channel="SMS")
 
 
 def test_get_classes_returns_formatted_string():
