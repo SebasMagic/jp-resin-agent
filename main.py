@@ -19,7 +19,7 @@ app = FastAPI(title="JP Resin Precalificador")
 def _get_deps():
     ghl = GHLClient(pit_token=settings.GHL_PIT_TOKEN, location_id=settings.GHL_LOCATION_ID)
     sheets = SheetsClient(csv_url=settings.GOOGLE_SHEETS_CSV_URL)
-    store = ConversationStore(db_path=settings.DB_PATH)
+    store = ConversationStore(supabase_url=settings.SUPABASE_URL, supabase_key=settings.SUPABASE_SERVICE_KEY)
     return ghl, sheets, store
 
 

@@ -30,10 +30,11 @@ class Settings(BaseSettings):
 
     GOOGLE_SHEETS_CSV_URL: str
 
-    WEBHOOK_SECRET: str = "changeme"
-    TEST_TAG: str = ""  # if set, only process contacts with this tag (e.g. "ai-test")
+    SUPABASE_URL: str
+    SUPABASE_SERVICE_KEY: str
 
-    DB_PATH: str = "conversations.db"
+    WEBHOOK_SECRET: str = "changeme"
+    TEST_TAG: str = ""
 
 
 settings = Settings()
