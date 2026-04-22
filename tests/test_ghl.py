@@ -34,7 +34,7 @@ def test_send_message(client):
 
 @respx.mock
 def test_create_opportunity(client):
-    respx.post(f"{GHL_BASE}/opportunities/").mock(
+    respx.post(f"{GHL_BASE}/opportunities").mock(
         return_value=httpx.Response(200, json={"opportunity": {"id": "opp123"}})
     )
     result = client.create_opportunity(
