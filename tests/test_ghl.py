@@ -66,7 +66,7 @@ def test_create_task(client):
 
 @respx.mock
 def test_trigger_workflow(client):
-    respx.post(f"{GHL_BASE}/contacts/contact123/workflow").mock(
+    respx.post(f"{GHL_BASE}/contacts/contact123/workflow/wf123").mock(
         return_value=httpx.Response(200, json={"success": True})
     )
     result = client.trigger_workflow(contact_id="contact123", workflow_id="wf123")

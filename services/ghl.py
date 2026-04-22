@@ -78,8 +78,7 @@ class GHLClient:
         return data["task"]
 
     def trigger_workflow(self, contact_id: str, workflow_id: str) -> dict:
-        body = {"workflowId": workflow_id}
-        return self._post(f"/contacts/{contact_id}/workflow", body)
+        return self._post(f"/contacts/{contact_id}/workflow/{workflow_id}", {})
 
     def get_pipelines(self) -> list[dict]:
         data = self._get("/opportunities/pipelines", params={"locationId": self._location_id})
