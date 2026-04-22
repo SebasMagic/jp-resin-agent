@@ -34,6 +34,7 @@ def create_agent(
         sheets=sheets,
         store=store,
         settings=settings,
+        lead_channel=lead_context.get("channel", "SMS"),
     )
 
     system_prompt = build_system_prompt(lead_type, lead_context, classes)
