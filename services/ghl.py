@@ -33,7 +33,12 @@ class GHLClient:
     def _post(self, path: str, body: dict) -> dict:
         with httpx.Client(timeout=30.0) as client:
             resp = client.post(f"{GHL_BASE}{path}", headers=self._headers, json=body)
-            resp.raise_for_status()
+            if not resp.is_success:
+                raise httpx.HTTPStatusError(
+                    f"{resp.status_code} {resp.text[:300]}",
+                    request=resp.request,
+                    response=resp,
+                )
             return resp.json()
 
     def _put(self, path: str, body: dict) -> dict:
@@ -60,7 +65,7 @@ class GHLClient:
             "status": "open",
             "contactId": contact_id,
         }
-        data = self._post("/opportunities", body)
+        data = self._post("/opportunities/", body)
         return data["opportunity"]
 
     def update_opportunity_stage(self, opportunity_id: str, stage_id: str) -> dict:
