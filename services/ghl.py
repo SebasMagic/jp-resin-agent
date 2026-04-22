@@ -90,9 +90,9 @@ class GHLClient:
         return data["customFields"]
 
     def search_opportunities(self, contact_id: str, pipeline_id: str = "") -> list[dict]:
-        params = {"contactId": contact_id, "locationId": self._location_id}
+        params = {"contact_id": contact_id, "location_id": self._location_id}
         if pipeline_id:
-            params["pipelineId"] = pipeline_id
+            params["pipeline_id"] = pipeline_id
         try:
             data = self._get("/opportunities/search", params=params)
             return data.get("opportunities", [])
@@ -102,9 +102,9 @@ class GHLClient:
             raise
 
     def get_opportunities_by_contact(self, contact_id: str) -> list[dict]:
-        """Search across all pipelines — used as fallback when pipelined search returns empty."""
+        """Search across all pipelines — fallback when pipeline-scoped search returns empty."""
         try:
-            data = self._get("/opportunities/search", params={"contactId": contact_id, "locationId": self._location_id})
+            data = self._get("/opportunities/search", params={"contact_id": contact_id, "location_id": self._location_id})
             return data.get("opportunities", [])
         except httpx.HTTPStatusError as e:
             if e.response.status_code in (404, 422):
