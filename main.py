@@ -172,10 +172,11 @@ async def reply(payload: ReplyPayload, x_webhook_secret: Optional[str] = Header(
     except Exception as exc:
         return {"status": "error", "response": f"Agent temporarily unavailable: {exc}"}
 
+    send_error = None
     if response:
         try:
             ghl.send_message(contact_id=payload.contactId, message=response, channel=channel)
-        except Exception:
-            pass
+        except Exception as e:
+            send_error = str(e)
 
-    return {"status": "ok", "response": response}
+    return {"status": "ok", "response": response, "send_error": send_error}
