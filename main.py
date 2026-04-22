@@ -128,7 +128,7 @@ async def new_lead(request: Request, x_webhook_secret: Optional[str] = Header(No
         first_message = build_first_message_cold(first_name)
 
     try:
-        ghl.send_message(contact_id=contact_id, message=first_message, channel="SMS")
+        ghl.send_message(contact_id=contact_id, message=first_message, channel=form.channel)
         store.save_message(contact_id, "ai", first_message)
     except Exception:
         pass  # lead is scored and in pipeline; don't fail webhook on messaging error
