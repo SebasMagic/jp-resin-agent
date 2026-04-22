@@ -7,3 +7,5 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: DEEPSEEK_API_KEY
+        value: sk-1070c67bd5d44099bb0e51ec03ed619b
