@@ -18,6 +18,8 @@ class SheetsClient:
             spots = int(spots_raw) if spots_raw.isdigit() else 0
             if spots <= 0:
                 continue
+            scarcity_raw = str(r.get("Spots Left Scarcity", spots_raw)).strip()
+            scarcity = int(scarcity_raw) if scarcity_raw.isdigit() else spots
             classes.append(ClassInfo(
                 name=r.get("Job Type", ""),
                 start_date=r.get("Class Starts", ""),
@@ -26,6 +28,7 @@ class SheetsClient:
                 state=r.get("State", ""),
                 price="",
                 spots_left=spots,
+                spots_scarcity=scarcity,
                 payment_link=r.get("Stripe Link", ""),
                 calendar_link="",
             ))

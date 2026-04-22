@@ -59,6 +59,7 @@ def test_get_classes_returns_formatted_string():
             state="Georgia",
             price="$2,500",
             spots_left=3,
+            spots_scarcity=2,
             payment_link="https://pay.com",
             calendar_link="https://cal.com",
         )

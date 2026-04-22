@@ -53,7 +53,7 @@ def _format_classes(classes: list[ClassInfo]) -> str:
     lines = []
     for c in classes:
         lines.append(
-            f"- {c.name} | {c.city}, {c.state} | {c.start_date} to {c.end_date} | {c.price} | {c.spots_left} spots left"
+            f"- {c.name} | {c.city}, {c.state} | {c.start_date} to {c.end_date} | {c.price} | {c.spots_scarcity} spots left"
         )
     return "\n".join(lines)
 
@@ -61,7 +61,7 @@ def _format_classes(classes: list[ClassInfo]) -> str:
 def build_first_message_hot(first_name: str, class_info: ClassInfo | None) -> str:
     if class_info:
         return (
-            f"Hey {first_name}! 🔥 Only {class_info.spots_left} spots left for JP Resin's bootcamp "
+            f"Hey {first_name}! 🔥 Only {class_info.spots_scarcity} spots left for JP Resin's bootcamp "
             f"in {class_info.city} — {class_info.start_date}. "
             f"Ready to lock in, or want a quick call with JP first?"
         )

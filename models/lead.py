@@ -29,6 +29,7 @@ class ClassInfo(BaseModel):
     state: str
     price: str
     spots_left: int
+    spots_scarcity: int
     payment_link: str
     calendar_link: str
 
