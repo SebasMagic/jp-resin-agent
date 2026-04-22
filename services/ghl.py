@@ -55,12 +55,12 @@ class GHLClient:
         body = {
             "pipelineId": pipeline_id,
             "locationId": self._location_id,
-            "name": name,
+            "name": name.strip() or "New Lead",
             "pipelineStageId": stage_id,
             "status": "open",
             "contactId": contact_id,
         }
-        data = self._post("/opportunities/", body)
+        data = self._post("/opportunities", body)
         return data["opportunity"]
 
     def update_opportunity_stage(self, opportunity_id: str, stage_id: str) -> dict:
